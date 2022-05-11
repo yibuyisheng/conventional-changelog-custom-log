@@ -1,5 +1,5 @@
 {
-  "name": "conventional-changelog-conventionalcommits",
+  "name": "conventional-changelog-custom-log",
   "version": "4.6.3",
   "description": "conventional-changelog conventionalcommits.org preset",
   "main": "index.js",
