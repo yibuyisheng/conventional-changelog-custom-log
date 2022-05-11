@@ -3,9 +3,11 @@
 const addBangNotes = require('./add-bang-notes')
 const compareFunc = require('compare-func')
 const Q = require('q')
-const readFile = Q.denodeify(require('fs').readFile)
+const fs = require('fs');
 const resolve = require('path').resolve
 const releaseAsRe = /release-as:\s*\w*@?([0-9]+\.[0-9]+\.[0-9a-z]+(-[0-9a-z.]+)?)\s*/i
+
+const readFile = Q.denodeify(fs.readFile)
 
 /**
  * Handlebar partials for various property substitutions based on commit context.
@@ -34,11 +36,22 @@ module.exports = function (config) {
     prefix: '{{this.prefix}}'
   })
 
+  const getTemplatePath = (templateName) => {
+    if (typeof config.templateDirectory === 'string') {
+      const templatePath = resolve(process.cwd(), config.templateDirectory, templateName);
+      if (fs.existsSync(templatePath)) {
+        return templatePath;
+      }
+    }
+
+    return resolve(__dirname, `./templates/${templateName}`);
+  };
+
   return Q.all([
-    readFile(resolve(__dirname, './templates/template.hbs'), 'utf-8'),
-    readFile(resolve(__dirname, './templates/header.hbs'), 'utf-8'),
-    readFile(resolve(__dirname, './templates/commit.hbs'), 'utf-8'),
-    readFile(resolve(__dirname, './templates/footer.hbs'), 'utf-8')
+    readFile(getTemplatePath('template.hbs'), 'utf-8'),
+    readFile(getTemplatePath('header.hbs'), 'utf-8'),
+    readFile(getTemplatePath('commit.hbs'), 'utf-8'),
+    readFile(getTemplatePath('footer.hbs'), 'utf-8')
   ])
     .spread((template, header, commit, footer) => {
       const writerOpts = getWriterOpts(config)
